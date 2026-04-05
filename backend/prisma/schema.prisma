@@ -58,8 +58,8 @@ model Account {
   userId        String   @unique
   accountNumber String   @unique
   balanceCents  Int      @default(0)
-  schoolId      String
-  school        School   @relation(fields: [schoolId], references: [id])
+  schoolId      String?
+  school        School?  @relation(fields: [schoolId], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -75,8 +75,8 @@ model Transaction {
   type                String   // 'DEPOSIT', 'WITHDRAW', 'TRANSFER', 'FEE_PAYMENT'
   status              String   @default("COMPLETED") // 'COMPLETED', 'FAILED'
   amountCents         Int
-  schoolId            String
-  school              School   @relation(fields: [schoolId], references: [id])
+  schoolId            String?
+  school              School?  @relation(fields: [schoolId], references: [id])
   primaryAccountId    String
   primaryAccount      Account  @relation("PrimaryAccount", fields: [primaryAccountId], references: [id])
   counterpartyAccountId String?
@@ -97,8 +97,8 @@ model Fee {
   dueDate     DateTime
   status      String   @default("PENDING") // 'PAID', 'PENDING', 'OVERDUE'
   studentId   String
-  schoolId    String
-  school      School   @relation(fields: [schoolId], references: [id])
+  schoolId    String?
+  school      School?  @relation(fields: [schoolId], references: [id])
   category    String   @default("tuition") // 'tuition', 'bus', 'lab', 'other'
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -119,8 +119,8 @@ model Announcement {
   id        String   @id @default(uuid())
   teacherId String
   teacher   User     @relation("TeacherAnnouncements", fields: [teacherId], references: [id], onDelete: Cascade)
-  schoolId  String
-  school    School   @relation(fields: [schoolId], references: [id])
+  schoolId  String?
+  school    School?  @relation(fields: [schoolId], references: [id])
   title     String
   body      String
   isPinned  Boolean  @default(false)
