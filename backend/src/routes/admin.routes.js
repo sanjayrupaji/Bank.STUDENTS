@@ -12,12 +12,13 @@ const {
 
 const router = express.Router();
 const adminOnly = [authenticate, requireRole(ROLES.ADMIN)];
+const schoolStaff = [authenticate, requireRole(ROLES.ADMIN, ROLES.MANAGER, ROLES.TEACHER)];
 
-router.get("/users", ...adminOnly, listQueryRules, validate, adminController.users);
-router.get("/accounts", ...adminOnly, listQueryRules, validate, adminController.accounts);
+router.get("/users", ...schoolStaff, listQueryRules, validate, adminController.users);
+router.get("/accounts", ...schoolStaff, listQueryRules, validate, adminController.accounts);
 router.get(
   "/transactions",
-  ...adminOnly,
+  ...schoolStaff,
   transactionListRules,
   validate,
   adminController.transactions

@@ -34,5 +34,6 @@ export function propsFrom(h) {
     result:          h.result,
     flashTxId:       h.flashTxId,
     insightWeekCount: h.insightWeekCount,
+    announcements:   h.announcements,
   };
 }

@@ -13,6 +13,7 @@ module.exports = {
   TX_STATUS: {
     COMPLETED: "COMPLETED",
     FAILED: "FAILED",
+    PENDING: "PENDING",
   },
   DEFAULT_PAGE_SIZE: 20,
   MAX_PAGE_SIZE: 100,

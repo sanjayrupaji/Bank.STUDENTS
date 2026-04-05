@@ -34,6 +34,7 @@ model User {
   messagesSent          Message[]      @relation("SentMessages")
   messagesReceived      Message[]      @relation("ReceivedMessages")
   managedSchools        School[]       @relation("SchoolManager")
+  transactionsVerified  Transaction[]  @relation("Verifier")
 }
 
 model School {
@@ -73,7 +74,7 @@ model Transaction {
   id                  String   @id @default(uuid())
   idempotencyKey      String?  @unique
   type                String   // 'DEPOSIT', 'WITHDRAW', 'TRANSFER', 'FEE_PAYMENT'
-  status              String   @default("COMPLETED") // 'COMPLETED', 'FAILED'
+  status              String   @default("COMPLETED") // 'COMPLETED', 'FAILED', 'PENDING'
   amountCents         Int
   schoolId            String?
   school              School?  @relation(fields: [schoolId], references: [id])
@@ -83,9 +84,12 @@ model Transaction {
   counterpartyAccount   Account? @relation("CounterpartyAccount", fields: [counterpartyAccountId], references: [id])
   initiatedById       String
   initiatedBy         User     @relation("Initiator", fields: [initiatedById], references: [id])
+  verifiedById        String?
+  verifiedBy          User?    @relation("Verifier", fields: [verifiedById], references: [id])
   description         String   @default("")
   resultPayload       String?  // JSON stringified payload
   failureReason       String?
+  verifiedAt          DateTime?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }

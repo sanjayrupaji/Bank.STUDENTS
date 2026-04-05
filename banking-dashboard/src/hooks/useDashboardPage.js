@@ -9,6 +9,7 @@ export function useDashboardPage() {
   const { socket } = useSocket();
   const [account, setAccount] = useState(null);
   const [recent, setRecent] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [phase, setPhase] = useState("form");
@@ -24,9 +25,15 @@ export function useDashboardPage() {
       const silent = Boolean(opts.silent);
       if (!silent) setLoading(true);
       try {
-        const accRes = await api("/api/accounts/me");
+        const [accRes, annRes] = await Promise.all([
+          api("/api/accounts/me"),
+          api("/api/announcements")
+        ]);
+        
         const a = accRes.data.account;
         setAccount(a);
+        setAnnouncements(annRes.data || []);
+
         const txRes = await api(`/api/transactions/history/${a.id}?limit=8`);
         setRecent(txRes.data.items || []);
       } catch (e) {
@@ -156,5 +163,6 @@ export function useDashboardPage() {
     rows,
     flashTxId,
     insightWeekCount,
+    announcements,
   };
 }

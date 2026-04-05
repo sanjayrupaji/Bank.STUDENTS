@@ -28,7 +28,9 @@ export function DashboardDesktop({
   result,
   flashTxId,
   insightWeekCount,
+  announcements,
 }) {
+  const school = account?.school || { name: "Your School" };
   const last = rows[0];
   
   // Mock data for new features (to be replaced by API later)
@@ -42,7 +44,7 @@ export function DashboardDesktop({
           Welcome back, {account?.user?.fullName || "Student"}!
         </h1>
         <p className="dash-sub" style={{ fontSize: "1.1rem", color: "var(--muted)" }}>
-          Your school savings are growing. Keep it up! 🌟
+          Your savings at <strong>{school.name}</strong> are growing. Keep it up! 🌟
         </p>
       </header>
 
@@ -97,6 +99,25 @@ export function DashboardDesktop({
           </p>
         </div>
       </section>
+
+      {/* ── Institutional Announcements ── */}
+      {announcements && announcements.length > 0 && (
+        <section className="dash-announcements" style={{ marginBottom: 32 }}>
+          <Card title="Institutional Updates" subtitle="Official messages from your school staff">
+             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {announcements.map(ann => (
+                   <div key={ann.id} style={{ padding: "16px", background: ann.isPinned ? "var(--gold-soft)" : "transparent", borderLeft: `4px solid ${ann.isPinned ? "var(--gold)" : "var(--border)"}`, borderRadius: "var(--radius)" }}>
+                      <p style={{ margin: 0, fontWeight: 700, color: "var(--navy)", fontSize: "1rem" }}>{ann.title}</p>
+                      <p style={{ margin: "4px 0 0 0", fontSize: "0.9rem", color: "var(--text-secondary)" }}>{ann.body}</p>
+                      <p style={{ margin: "8px 0 0 0", fontSize: "0.75rem", color: "var(--muted)" }}>
+                        Posted by {ann.teacher?.fullName} • {new Date(ann.createdAt).toLocaleDateString()}
+                      </p>
+                   </div>
+                ))}
+             </div>
+          </Card>
+        </section>
+      )}
 
       <section className="dash-saas-toolbar" aria-label="Cash actions" style={{ background: "var(--cream-d)", borderRadius: "var(--radius)", padding: "16px 24px", border: "1px solid var(--border)" }}>
         <div className="dash-saas-toolbar-meta">

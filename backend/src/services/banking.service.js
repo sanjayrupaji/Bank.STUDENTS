@@ -61,16 +61,23 @@ async function deposit({ accountId, amountCents, userId, role, schoolId, idempot
       const account = await tx.account.findUnique({ where: { id: accountId } });
       await assertAccountAccess(account, userId, role, schoolId);
 
-      const updatedAccount = await tx.account.update({
-        where: { id: account.id },
-        data: { balanceCents: { increment: amountCents } },
-      });
+      // ── Genuinity Logic: Students must be verified ──
+      const isStudent = role === ROLES.STUDENT;
+      const status = isStudent ? TX_STATUS.PENDING : TX_STATUS.COMPLETED;
+
+      let updatedAccount = account;
+      if (!isStudent) {
+        updatedAccount = await tx.account.update({
+          where: { id: account.id },
+          data: { balanceCents: { increment: amountCents } },
+        });
+      }
 
       const dbTx = await tx.transaction.create({
         data: {
           idempotencyKey: idempotencyKey || undefined,
           type: TX_TYPES.DEPOSIT,
-          status: TX_STATUS.COMPLETED,
+          status,
           amountCents,
           schoolId,
           primaryAccountId: updatedAccount.id,
@@ -87,7 +94,9 @@ async function deposit({ accountId, amountCents, userId, role, schoolId, idempot
       });
     });
 
-    require("./realtime.service").notifyTransactionCommitted(payload);
+    if (payload.transaction.status === TX_STATUS.COMPLETED) {
+      require("./realtime.service").notifyTransactionCommitted(payload);
+    }
     return payload;
   } catch (err) {
     if (err.code === "P2002" && err.meta?.target?.includes("idempotencyKey")) {
@@ -112,20 +121,23 @@ async function withdraw({ accountId, amountCents, userId, role, schoolId, idempo
         throw new AppError("Insufficient balance", 400);
       }
 
-      const updatedAccount = await tx.account.update({
-        where: { id: account.id },
-        data: { balanceCents: { decrement: amountCents } },
-      });
+      // ── Genuinity Logic: Students must be verified ──
+      const isStudent = role === ROLES.STUDENT;
+      const status = isStudent ? TX_STATUS.PENDING : TX_STATUS.COMPLETED;
 
-      if (updatedAccount.balanceCents < 0) {
-        throw new AppError("Insufficient balance", 400);
+      let updatedAccount = account;
+      if (!isStudent) {
+        updatedAccount = await tx.account.update({
+          where: { id: account.id },
+          data: { balanceCents: { decrement: amountCents } },
+        });
       }
 
       const dbTx = await tx.transaction.create({
         data: {
           idempotencyKey: idempotencyKey || undefined,
           type: TX_TYPES.WITHDRAW,
-          status: TX_STATUS.COMPLETED,
+          status,
           amountCents,
           schoolId,
           primaryAccountId: updatedAccount.id,
@@ -142,7 +154,9 @@ async function withdraw({ accountId, amountCents, userId, role, schoolId, idempo
       });
     });
 
-    require("./realtime.service").notifyTransactionCommitted(payload);
+    if (payload.transaction.status === TX_STATUS.COMPLETED) {
+       require("./realtime.service").notifyTransactionCommitted(payload);
+    }
     return payload;
   } catch (err) {
     if (err.code === "P2002" && idempotencyKey) {
@@ -193,24 +207,33 @@ async function transfer({
         throw new AppError("Insufficient balance", 400);
       }
 
-      const fromUpdated = await tx.account.update({
-        where: { id: fromAcc.id },
-        data: { balanceCents: { decrement: amountCents } },
-      });
-      if (fromUpdated.balanceCents < 0) {
-        throw new AppError("Insufficient balance", 400);
-      }
+      // ── Genuinity Logic: Students must be verified ──
+      const isStudent = role === ROLES.STUDENT;
+      const status = isStudent ? TX_STATUS.PENDING : TX_STATUS.COMPLETED;
 
-      const toUpdated = await tx.account.update({
-        where: { id: toAcc.id },
-        data: { balanceCents: { increment: amountCents } },
-      });
+      let fromUpdated = fromAcc;
+      let toUpdated = toAcc;
+
+      if (!isStudent) {
+        fromUpdated = await tx.account.update({
+          where: { id: fromAcc.id },
+          data: { balanceCents: { decrement: amountCents } },
+        });
+        if (fromUpdated.balanceCents < 0) {
+          throw new AppError("Insufficient balance", 400);
+        }
+
+        toUpdated = await tx.account.update({
+          where: { id: toAcc.id },
+          data: { balanceCents: { increment: amountCents } },
+        });
+      }
 
       const dbTx = await tx.transaction.create({
         data: {
           idempotencyKey: idempotencyKey || undefined,
           type: TX_TYPES.TRANSFER,
-          status: TX_STATUS.COMPLETED,
+          status,
           amountCents,
           schoolId,
           primaryAccountId: fromUpdated.id,
@@ -228,7 +251,9 @@ async function transfer({
       });
     });
 
-    require("./realtime.service").notifyTransactionCommitted(payload);
+    if (payload.transaction.status === TX_STATUS.COMPLETED) {
+      require("./realtime.service").notifyTransactionCommitted(payload);
+    }
     return payload;
   } catch (err) {
     if (err.code === "P2002" && idempotencyKey) {
