@@ -1,3 +1,4 @@
+// Prisma optimized admin service
 const { prisma } = require("../config/db");
 const { centsToDisplay } = require("../utils/money");
 const { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } = require("../config/constants");
