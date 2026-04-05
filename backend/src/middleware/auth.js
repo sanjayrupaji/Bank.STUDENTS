@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/User.model");
+const { prisma } = require("../config/db");
 const { sendFail } = require("../utils/response");
 const AppError = require("../utils/AppError");
 const { isBankingRole } = require("../utils/roles");
@@ -15,11 +15,11 @@ async function authenticate(req, res, next) {
       throw new AppError("Server misconfiguration", 500);
     }
     const decoded = jwt.verify(m[1], process.env.JWT_SECRET);
-    const user = await User.findById(decoded.sub);
+    const user = await prisma.user.findUnique({ where: { id: decoded.sub } });
     if (!user || !user.isActive) {
       return sendFail(res, 401, "Invalid or expired session", null);
     }
-    req.user = { id: user._id.toString(), role: user.role, email: user.email };
+    req.user = { id: user.id, role: user.role, email: user.email };
     next();
   } catch (e) {
     if (e.name === "JsonWebTokenError" || e.name === "TokenExpiredError") {

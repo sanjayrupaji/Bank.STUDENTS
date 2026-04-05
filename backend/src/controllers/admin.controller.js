@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const { prisma } = require("../config/db");
 const adminService = require("../services/admin.service");
 const analyticsService = require("../services/analytics.service");
 const errorRing = require("../utils/errorRing");
@@ -76,16 +76,18 @@ const activity = asyncHandler(async (req, res) => {
 });
 
 const system = asyncHandler(async (req, res) => {
-  const dbStates = ["disconnected", "connected", "connecting", "disconnecting"];
-  const db =
-    mongoose.connection.readyState === 1
-      ? "connected"
-      : dbStates[mongoose.connection.readyState] || "unknown";
+  let dbStatus = "unknown";
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    dbStatus = "connected";
+  } catch (err) {
+    dbStatus = "disconnected";
+  }
 
   return sendSuccess(res, {
     uptime: Math.round(process.uptime()),
     uptimeHuman: `${Math.floor(process.uptime() / 3600)}h ${Math.floor((process.uptime() % 3600) / 60)}m`,
-    database: db,
+    database: dbStatus,
     memory: {
       rss: process.memoryUsage().rss,
       heapUsed: process.memoryUsage().heapUsed,
