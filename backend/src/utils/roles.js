@@ -1,7 +1,13 @@
 const { ROLES } = require("../config/constants");
 
 function isBankingRole(role) {
-  return role === ROLES.USER || role === ROLES.STUDENT || role === ROLES.ADMIN;
+  return (
+    role === ROLES.USER ||
+    role === ROLES.STUDENT ||
+    role === ROLES.TEACHER ||
+    role === ROLES.MANAGER ||
+    role === ROLES.ADMIN
+  );
 }
 
 function isStudentRole(role) {

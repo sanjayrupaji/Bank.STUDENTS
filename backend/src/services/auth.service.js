@@ -13,7 +13,15 @@ function publicUser(userRow) {
     email: userRow.email,
     fullName: userRow.fullName,
     role: userRow.role,
+    schoolId: userRow.schoolId,
   };
+  if (userRow.school) {
+    o.school = {
+      id: userRow.school.id,
+      name: userRow.school.name,
+      uniqueCode: userRow.school.uniqueCode,
+    };
+  }
   if (userRow.mentor) {
     o.mentor = {
       fullName: userRow.mentor.fullName,
@@ -40,6 +48,9 @@ async function loadUserForClient(userId) {
     include: {
       mentor: {
         select: { fullName: true, email: true },
+      },
+      school: {
+        select: { id: true, name: true, uniqueCode: true },
       },
     },
   });
