@@ -22,14 +22,24 @@ export function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("teacher"); // Default to joiner
+  const [schoolName, setSchoolName] = useState("");
+  const [schoolCode, setSchoolCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await register({ fullName, email, password });
-      showToast("Account created", "success");
+      const payload = { 
+        fullName, 
+        email, 
+        password, 
+        role,
+        ...(role === "manager" ? { schoolName } : { schoolCode })
+      };
+      await register(payload);
+      showToast("Registration successful", "success");
       nav("/", { replace: true });
     } catch (err) {
       showToast(err.message, "error");
@@ -39,34 +49,69 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="auth-page">
-      <Card title="Create account" subtitle="8+ characters with letters and numbers">
+    <div className="auth-page animate-fade-in">
+      <Card title="Register" subtitle="Join the Student Bank platform">
         <form onSubmit={onSubmit}>
+          <div className="auth-role-selector" style={{ marginBottom: "24px", display: "flex", gap: "12px" }}>
+             <button 
+              type="button" 
+              className={`role-btn ${role === 'teacher' ? 'active' : ''}`}
+              onClick={() => setRole('teacher')}
+              style={role === 'teacher' ? activeBtnStyle : btnStyle}
+             >
+                Join School
+             </button>
+             <button 
+              type="button" 
+              className={`role-btn ${role === 'manager' ? 'active' : ''}`}
+              onClick={() => setRole('manager')}
+              style={role === 'manager' ? activeBtnStyle : btnStyle}
+             >
+                Start New School
+             </button>
+          </div>
+
           <Input
             label="Full name"
-            name="fullName"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
           />
           <Input
             label="Email"
-            name="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+          
+          {role === "manager" ? (
+            <Input
+              label="School name"
+              placeholder="e.g. Greenvale Academy"
+              value={schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+              required
+            />
+          ) : (
+            <Input
+              label="School join code"
+              placeholder="Provided by your manager"
+              value={schoolCode}
+              onChange={(e) => setSchoolCode(e.target.value)}
+              required
+            />
+          )}
+
           <Input
             label="Password"
-            name="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
           <Button type="submit" loading={loading} className="auth-submit">
-            Register
+             {role === 'manager' ? 'Create School & Rank' : 'Join & Register'}
           </Button>
         </form>
         <p className="auth-switch">
@@ -76,3 +121,23 @@ export function RegisterPage() {
     </div>
   );
 }
+
+const btnStyle = {
+  flex: 1,
+  padding: "10px",
+  borderRadius: "var(--radius)",
+  border: "1px solid var(--border)",
+  background: "white",
+  color: "var(--text-secondary)",
+  cursor: "pointer",
+  fontSize: "0.9rem",
+  fontWeight: 600,
+  transition: "all 0.2s"
+};
+
+const activeBtnStyle = {
+  ...btnStyle,
+  background: "var(--navy)",
+  color: "white",
+  borderColor: "var(--navy)"
+};

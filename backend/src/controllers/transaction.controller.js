@@ -11,6 +11,7 @@ const deposit = asyncHandler(async (req, res) => {
     amountCents,
     userId: req.user.id,
     role: req.user.role,
+    schoolId: req.user.schoolId,
     idempotencyKey: req.idempotencyKey,
     description: req.body.description,
   });
@@ -24,6 +25,7 @@ const withdraw = asyncHandler(async (req, res) => {
     amountCents,
     userId: req.user.id,
     role: req.user.role,
+    schoolId: req.user.schoolId,
     idempotencyKey: req.idempotencyKey,
     description: req.body.description,
   });
@@ -38,6 +40,7 @@ const transfer = asyncHandler(async (req, res) => {
     amountCents,
     userId: req.user.id,
     role: req.user.role,
+    schoolId: req.user.schoolId,
     idempotencyKey: req.idempotencyKey,
     description: req.body.description,
   });
@@ -54,6 +57,7 @@ const history = asyncHandler(async (req, res) => {
     page,
     limit,
     role: req.user.role,
+    schoolId: req.user.schoolId,
   });
   return sendSuccess(res, data);
 });

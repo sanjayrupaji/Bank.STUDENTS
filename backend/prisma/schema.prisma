@@ -12,7 +12,15 @@ model User {
   email        String   @unique
   passwordHash String
   fullName     String
-  role         String   @default("student")
+  role         String   @default("student") // 'admin', 'manager', 'teacher', 'student'
+  
+  // School Metadata
+  schoolId     String?
+  school       School?  @relation("SchoolUsers", fields: [schoolId], references: [id])
+  studentClass String?  @map("class")
+  rollNumber   String?
+  phone        String?
+  
   mentorId     String?
   mentor       User?    @relation("MentorStudent", fields: [mentorId], references: [id])
   students     User[]   @relation("MentorStudent")
@@ -23,6 +31,25 @@ model User {
   account               Account?
   transactionsInitiated Transaction[]  @relation("Initiator")
   announcements         Announcement[] @relation("TeacherAnnouncements")
+  messagesSent          Message[]      @relation("SentMessages")
+  messagesReceived      Message[]      @relation("ReceivedMessages")
+  managedSchools        School[]       @relation("SchoolManager")
+}
+
+model School {
+  id          String   @id @default(uuid())
+  name        String
+  uniqueCode  String   @unique // Human-readable e.g. "GREENVALE-2024"
+  managerId   String
+  manager     User     @relation("SchoolManager", fields: [managerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users         User[]         @relation("SchoolUsers")
+  accounts      Account[]
+  transactions  Transaction[]
+  fees          Fee[]
+  announcements Announcement[]
 }
 
 model Account {
@@ -31,19 +58,25 @@ model Account {
   userId        String   @unique
   accountNumber String   @unique
   balanceCents  Int      @default(0)
+  schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  primaryTransactions Transaction[] @relation("PrimaryAccount")
+  primaryTransactions      Transaction[] @relation("PrimaryAccount")
   counterpartyTransactions Transaction[] @relation("CounterpartyAccount")
+  savingsGoal              SavingsGoal?
+  milestones               Milestone[]
 }
 
 model Transaction {
   id                  String   @id @default(uuid())
   idempotencyKey      String?  @unique
-  type                String   // 'DEPOSIT', 'WITHDRAW', 'TRANSFER'
+  type                String   // 'DEPOSIT', 'WITHDRAW', 'TRANSFER', 'FEE_PAYMENT'
   status              String   @default("COMPLETED") // 'COMPLETED', 'FAILED'
   amountCents         Int
+  schoolId            String
+  school              School   @relation(fields: [schoolId], references: [id])
   primaryAccountId    String
   primaryAccount      Account  @relation("PrimaryAccount", fields: [primaryAccountId], references: [id])
   counterpartyAccountId String?
@@ -57,13 +90,62 @@ model Transaction {
   updatedAt           DateTime @updatedAt
 }
 
+model Fee {
+  id          String   @id @default(uuid())
+  title       String
+  amountCents Int
+  dueDate     DateTime
+  status      String   @default("PENDING") // 'PAID', 'PENDING', 'OVERDUE'
+  studentId   String
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id])
+  category    String   @default("tuition") // 'tuition', 'bus', 'lab', 'other'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  senderId    String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId  String
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  body        String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
 model Announcement {
   id        String   @id @default(uuid())
   teacherId String
   teacher   User     @relation("TeacherAnnouncements", fields: [teacherId], references: [id], onDelete: Cascade)
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id])
   title     String
   body      String
   isPinned  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SavingsGoal {
+  id          String   @id @default(uuid())
+  accountId   String   @unique
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  targetCents Int
+  label       String   @default("My Savings Goal")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Milestone {
+  id          String   @id @default(uuid())
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name        String
+  type        String   // 'STREAK', 'DEPOSIT_TOTAL', 'BALANCE_THRESHOLD'
+  threshold   Int
+  isUnlocked  Boolean  @default(false)
+  unlockedAt  DateTime?
+  createdAt   DateTime @default(now())
 }

@@ -30,24 +30,54 @@ export function DashboardDesktop({
   insightWeekCount,
 }) {
   const last = rows[0];
+  
+  // Mock data for new features (to be replaced by API later)
+  const savingsGoal = account?.savingsGoal || { target: 5000, label: "New Cycle" };
+  const progressPercent = Math.min(100, Math.max(0, ((account?.balance || 0) / savingsGoal.target) * 100));
 
   return (
-    <div className="dashboard dash-saas">
+    <div className="dashboard dash-saas animate-fade-in">
       <header className="dash-header dash-saas-head">
-        <p className="dash-sub">Dense workspace — metrics, ledger, and shortcuts visible together</p>
-        {insightWeekCount > 0 ? (
-          <p className="dash-insight-line">
-            Weekly pulse: {insightWeekCount} posting{insightWeekCount === 1 ? "" : "s"} in the last 7
-            days in this window — compare with prior weeks in Activity.
-          </p>
-        ) : null}
+        <h1 style={{ fontFamily: "var(--font-display)", color: "var(--navy)", fontSize: "2.5rem", margin: "0 0 8px 0" }}>
+          Welcome back, {account?.user?.fullName || "Student"}!
+        </h1>
+        <p className="dash-sub" style={{ fontSize: "1.1rem", color: "var(--muted)" }}>
+          Your school savings are growing. Keep it up! 🌟
+        </p>
       </header>
+
+      {/* ── Savings Goal Progress ── */}
+      <section className="dash-goal-section" style={{ marginBottom: 32 }}>
+        <Card noPadding>
+          <div style={{ padding: "24px", background: "var(--navy)", borderRadius: "var(--radius-lg)", color: "white" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 12 }}>
+              <div>
+                <p style={{ opacity: 0.8, fontSize: "0.9rem", margin: 0 }}>SAVINGS GOAL: {savingsGoal.label}</p>
+                <h2 style={{ fontFamily: "var(--font-display)", margin: "4px 0 0 0", fontSize: "1.8rem" }}>
+                  ₹{account?.balance || "0"} / ₹{savingsGoal.target}
+                </h2>
+              </div>
+              <p style={{ fontSize: "1.2rem", fontWeight: 800, margin: 0 }}>{Math.round(progressPercent)}%</p>
+            </div>
+            <div style={{ height: 12, background: "rgba(255,255,255,0.15)", borderRadius: 6, overflow: "hidden" }}>
+              <div 
+                style={{ 
+                  height: "100%", 
+                  width: `${progressPercent}%`, 
+                  background: "var(--gold)", 
+                  transition: "width 1s cubic-bezier(0.34, 1.56, 0.64, 1)" 
+                }} 
+              />
+            </div>
+          </div>
+        </Card>
+      </section>
 
       <section className="dash-saas-kpis" aria-label="Key metrics">
         <div className="md-stat-card">
-          <div className="md-stat-card-accent" />
+          <div className="md-stat-card-accent" style={{ background: "var(--gold)" }} />
           <p className="md-stat-card-label">Available Balance</p>
-          <p className="md-stat-card-value">₹{account?.balance ?? "0.00"}</p>
+          <p className="md-stat-card-value" style={{ fontFamily: "var(--font-display)" }}>₹{account?.balance ?? "0.00"}</p>
         </div>
         <div className="md-stat-card">
           <div className="md-stat-card-accent" />
@@ -61,59 +91,56 @@ export function DashboardDesktop({
         </div>
         <div className="md-stat-card">
           <div className="md-stat-card-accent" />
-          <p className="md-stat-card-label">Transactions</p>
-          <p className="md-stat-card-value">{rows.length}</p>
-          <p className="md-stat-card-sub">in current view</p>
-        </div>
-        <div className="md-stat-card">
-          <div className="md-stat-card-accent" />
           <p className="md-stat-card-label">Last Activity</p>
           <p className="md-stat-card-value" style={{ fontSize: "1rem", fontWeight: 700 }}>
-            {last ? last.createdAt : "—"}
+            {last ? last.createdAt : "Just now"}
           </p>
         </div>
       </section>
 
-      <section className="dash-saas-toolbar" aria-label="Cash actions">
+      <section className="dash-saas-toolbar" aria-label="Cash actions" style={{ background: "var(--cream-d)", borderRadius: "var(--radius)", padding: "16px 24px", border: "1px solid var(--border)" }}>
         <div className="dash-saas-toolbar-meta">
-          <span className="dash-saas-toolbar-hint">Showing {rows.length} recent postings in this window</span>
+          <span className="dash-saas-toolbar-hint" style={{ fontWeight: 600, color: "var(--navy)" }}>Manage your funds</span>
         </div>
         <div className="dash-saas-toolbar-btns">
-          <Button variant="primary" type="button" onClick={() => setModal("deposit")}>
-            Deposit
+          <Button variant="primary" type="button" onClick={() => setModal("deposit")} style={{ borderRadius: "var(--radius-lg)" }}>
+             Deposit Money
           </Button>
-          <Button variant="secondary" type="button" onClick={() => setModal("withdraw")}>
-            Withdraw
+          <Button variant="secondary" type="button" onClick={() => setModal("withdraw")} style={{ borderRadius: "var(--radius-lg)" }}>
+             Withdraw
           </Button>
         </div>
       </section>
 
       <div className="dash-saas-body">
         <div className="dash-saas-primary">
-          <Card title="Ledger" subtitle="Most recent movements (same data as mobile — table layout)">
+          <Card title="Ledger" subtitle="Your recent school transactions">
             <Table
               columns={columns}
               rows={rows}
-              empty="No transactions yet — make a deposit to get started."
+              empty="No transactions yet — make your first deposit!"
               rowClassName={(row) => (row.id === flashTxId ? "ui-table-row-flash" : "")}
             />
           </Card>
         </div>
         <aside className="dash-saas-aside" aria-label="Workspace shortcuts">
-          <Card title="Payments" subtitle="Jump without leaving context">
+          <Card title="Achievements" subtitle="Badges earned this month">
+            <div style={{ display: "flex", gap: 12, padding: "8px 0" }}>
+              <div title="Early Bird" style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--gold-p)", display: "grid", placeItems: "center", fontSize: "1.5rem" }}>🏆</div>
+              <div title="Consistent Saver" style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--gold-p)", display: "grid", placeItems: "center", fontSize: "1.5rem", opacity: 0.4 }}>💎</div>
+              <div title="Goal Getter" style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--gold-p)", display: "grid", placeItems: "center", fontSize: "1.5rem", opacity: 0.4 }}>🎯</div>
+            </div>
+          </Card>
+          
+          <Card title="Quick Links">
             <nav className="dash-saas-shortcuts">
               <NavLink to="/transfer" className="dash-saas-shortcut">
-                Transfer funds
+                Transfer to Peer
               </NavLink>
               <NavLink to="/history" className="dash-saas-shortcut">
-                Full transaction history
+                Passbook View
               </NavLink>
             </nav>
-          </Card>
-          <Card title="Status">
-            <p className="dash-saas-aside-note">
-              Balances sync live across sessions. Use Activity for filters and pagination.
-            </p>
           </Card>
         </aside>
       </div>

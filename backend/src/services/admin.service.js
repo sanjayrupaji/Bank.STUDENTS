@@ -13,14 +13,19 @@ function normalizePagination(query) {
   return { page, limit };
 }
 
-async function listUsers(page, limit, q, sortField, sortDir) {
+async function listUsers(page, limit, q, sortField, sortDir, schoolId) {
   const skip = (page - 1) * limit;
 
-  const where = {};
+  const where = { schoolId }; // Strict isolation
   if (q) {
-    where.OR = [
-      { email: { contains: q } },
-      { fullName: { contains: q } },
+    where.AND = [
+      { schoolId },
+      {
+        OR: [
+          { email: { contains: q } },
+          { fullName: { contains: q } },
+        ]
+      }
     ];
   }
 
@@ -46,12 +51,15 @@ async function listUsers(page, limit, q, sortField, sortDir) {
   };
 }
 
-async function listAccounts(page, limit, q, sortField, sortDir) {
+async function listAccounts(page, limit, q, sortField, sortDir, schoolId) {
   const skip = (page - 1) * limit;
 
-  const where = {};
+  const where = { schoolId }; // Strict isolation
   if (q) {
-    where.accountNumber = { contains: q };
+    where.AND = [
+      { schoolId },
+      { accountNumber: { contains: q } }
+    ];
   }
 
   const orderBy = {};
@@ -89,9 +97,12 @@ async function listAccounts(page, limit, q, sortField, sortDir) {
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-async function listAllTransactions(page, limit, q, type, sortField, sortDir) {
+async function listAllTransactions(page, limit, q, type, sortField, sortDir, schoolId) {
   const skip = (page - 1) * limit;
-  const where = { status: TX_STATUS.COMPLETED };
+  const where = { 
+    status: TX_STATUS.COMPLETED,
+    schoolId // Strict isolation
+  };
 
   if (type && Object.values(TX_TYPES).includes(type)) {
     where.type = type;
@@ -139,10 +150,10 @@ async function listAllTransactions(page, limit, q, type, sortField, sortDir) {
   };
 }
 
-async function exportTransactionsCsv(q, type) {
+async function exportTransactionsCsv(q, type, schoolId) {
   const page = 1;
   const limit = 10000;
-  const { items } = await listAllTransactions(page, limit, q, type, "createdAt", "desc");
+  const { items } = await listAllTransactions(page, limit, q, type, "createdAt", "desc", schoolId);
   const headers = ["id", "type", "amount", "description", "createdAt", "initiatedByEmail"];
   const lines = [headers.join(",")];
   for (const t of items) {

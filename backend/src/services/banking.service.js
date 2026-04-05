@@ -39,15 +39,19 @@ function buildPayload(txRow, accountSnapshots) {
   };
 }
 
-async function assertAccountAccess(account, userId, role, allowAdminAll) {
+async function assertAccountAccess(account, userId, role, schoolId) {
   if (!account) throw new AppError("Account not found", 404);
-  if (role === ROLES.ADMIN && allowAdminAll) return;
+  if (account.schoolId !== schoolId) {
+    throw new AppError("Forbidden: account belongs to another school", 403);
+  }
+  // Admins/Managers/Teachers from the same school can access (depending on role logic)
+  if (role === ROLES.ADMIN || role === ROLES.MANAGER || role === ROLES.TEACHER) return;
   if (account.userId !== userId) {
     throw new AppError("Forbidden: not your account", 403);
   }
 }
 
-async function deposit({ accountId, amountCents, userId, role, idempotencyKey, description }) {
+async function deposit({ accountId, amountCents, userId, role, schoolId, idempotencyKey, description }) {
   const cached = await idempotentResult(idempotencyKey);
   if (cached) return cached;
 
@@ -55,7 +59,7 @@ async function deposit({ accountId, amountCents, userId, role, idempotencyKey, d
   try {
     await prisma.$transaction(async (tx) => {
       const account = await tx.account.findUnique({ where: { id: accountId } });
-      await assertAccountAccess(account, userId, role, true);
+      await assertAccountAccess(account, userId, role, schoolId);
 
       const updatedAccount = await tx.account.update({
         where: { id: account.id },
@@ -68,6 +72,7 @@ async function deposit({ accountId, amountCents, userId, role, idempotencyKey, d
           type: TX_TYPES.DEPOSIT,
           status: TX_STATUS.COMPLETED,
           amountCents,
+          schoolId,
           primaryAccountId: updatedAccount.id,
           initiatedById: userId,
           description: description || "",
@@ -85,7 +90,6 @@ async function deposit({ accountId, amountCents, userId, role, idempotencyKey, d
     require("./realtime.service").notifyTransactionCommitted(payload);
     return payload;
   } catch (err) {
-    // Prisma unique constraint failure for idempotencyKey
     if (err.code === "P2002" && err.meta?.target?.includes("idempotencyKey")) {
       const cachedAgain = await idempotentResult(idempotencyKey);
       if (cachedAgain) return cachedAgain;
@@ -94,7 +98,7 @@ async function deposit({ accountId, amountCents, userId, role, idempotencyKey, d
   }
 }
 
-async function withdraw({ accountId, amountCents, userId, role, idempotencyKey, description }) {
+async function withdraw({ accountId, amountCents, userId, role, schoolId, idempotencyKey, description }) {
   const cached = await idempotentResult(idempotencyKey);
   if (cached) return cached;
 
@@ -102,21 +106,19 @@ async function withdraw({ accountId, amountCents, userId, role, idempotencyKey, 
   try {
     await prisma.$transaction(async (tx) => {
       const account = await tx.account.findUnique({ where: { id: accountId } });
-      await assertAccountAccess(account, userId, role, true);
+      await assertAccountAccess(account, userId, role, schoolId);
 
       if (account.balanceCents < amountCents) {
         throw new AppError("Insufficient balance", 400);
       }
 
-      // Check balance again in update condition to avoid race condition 
-      // (though SQLite serializes transactions, it's good practice)
       const updatedAccount = await tx.account.update({
         where: { id: account.id },
         data: { balanceCents: { decrement: amountCents } },
       });
 
       if (updatedAccount.balanceCents < 0) {
-        throw new AppError("Insufficient balance", 400); // Rollback will occur
+        throw new AppError("Insufficient balance", 400);
       }
 
       const dbTx = await tx.transaction.create({
@@ -125,6 +127,7 @@ async function withdraw({ accountId, amountCents, userId, role, idempotencyKey, 
           type: TX_TYPES.WITHDRAW,
           status: TX_STATUS.COMPLETED,
           amountCents,
+          schoolId,
           primaryAccountId: updatedAccount.id,
           initiatedById: userId,
           description: description || "",
@@ -156,6 +159,7 @@ async function transfer({
   amountCents,
   userId,
   role,
+  schoolId,
   idempotencyKey,
   description,
 }) {
@@ -171,10 +175,16 @@ async function transfer({
   try {
     await prisma.$transaction(async (tx) => {
       const fromAcc = await tx.account.findUnique({ where: { id: fromAccountId } });
-      await assertAccountAccess(fromAcc, userId, role, true);
+      await assertAccountAccess(fromAcc, userId, role, schoolId);
 
-      const toAcc = await tx.account.findUnique({ where: { accountNumber: toNumber } });
+      const toAcc = await tx.account.findUnique({ 
+        where: { accountNumber: toNumber } 
+      });
+      
       if (!toAcc) throw new AppError("Destination account not found", 404);
+      if (toAcc.schoolId !== schoolId) {
+        throw new AppError("Cannot transfer to an account outside your school", 403);
+      }
       if (toAcc.id === fromAcc.id) {
         throw new AppError("Cannot transfer to the same account", 400);
       }
@@ -202,6 +212,7 @@ async function transfer({
           type: TX_TYPES.TRANSFER,
           status: TX_STATUS.COMPLETED,
           amountCents,
+          schoolId,
           primaryAccountId: fromUpdated.id,
           counterpartyAccountId: toUpdated.id,
           initiatedById: userId,
@@ -228,10 +239,16 @@ async function transfer({
   }
 }
 
-async function listTransactionsForUser({ userId, accountId, page, limit, role }) {
+async function listTransactionsForUser({ userId, accountId, page, limit, role, schoolId }) {
   const account = await prisma.account.findUnique({ where: { id: accountId } });
   if (!account) throw new AppError("Account not found", 404);
-  if (role !== ROLES.ADMIN && account.userId !== userId) {
+  
+  // Multi-tenant check
+  if (account.schoolId !== schoolId) {
+    throw new AppError("Forbidden: account belongs to another school", 403);
+  }
+
+  if (role !== ROLES.ADMIN && role !== ROLES.MANAGER && role !== ROLES.TEACHER && account.userId !== userId) {
     throw new AppError("Forbidden", 403);
   }
 
@@ -240,6 +257,7 @@ async function listTransactionsForUser({ userId, accountId, page, limit, role })
   const [items, total] = await Promise.all([
     prisma.transaction.findMany({
       where: {
+        schoolId, // Strict isolation
         OR: [
           { primaryAccountId: account.id },
           { counterpartyAccountId: account.id },
@@ -251,6 +269,7 @@ async function listTransactionsForUser({ userId, accountId, page, limit, role })
     }),
     prisma.transaction.count({
       where: {
+        schoolId, // Strict isolation
         OR: [
           { primaryAccountId: account.id },
           { counterpartyAccountId: account.id },

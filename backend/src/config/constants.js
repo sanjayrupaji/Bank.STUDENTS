@@ -1,8 +1,8 @@
 module.exports = {
   ROLES: {
-    USER: "user",
     STUDENT: "student",
     TEACHER: "teacher",
+    MANAGER: "manager",
     ADMIN: "admin",
   },
   TX_TYPES: {

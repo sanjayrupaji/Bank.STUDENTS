@@ -3,58 +3,69 @@
    School Bank SaaS — banking-dashboard
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800&family=Nunito:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* ── Color Palette ─────────────────────────────────────── */
-  --md-primary: #4f46e5;
-  --md-primary-hover: #4338ca;
-  --md-primary-container: #e0e7ff;
-  --md-on-primary: #ffffff;
-  --md-on-primary-container: #1e1b4b;
+  /* ── Warm School Palette ─────────────────────────────── */
+  --navy: #1A3A5C;
+  --navy-l: #214970;
+  --gold: #E07B39;
+  --gold-l: #F0964E;
+  --gold-p: #FEF0E5;
+  --cream: #FAF6EF;
+  --cream-d: #F0EAE0;
+  --text: #1A2B3C;
+  --muted: #7A8A98;
 
-  --md-secondary: #6366f1;
-  --md-secondary-container: #eef2ff;
-  --md-on-secondary-container: #312e81;
+  /* ── MD3 Mapping (Warm Theme) ────────────────────────── */
+  --md-primary: var(--navy);
+  --md-primary-hover: var(--navy-l);
+  --md-primary-container: var(--gold-p);
+  --md-on-primary: #ffffff;
+  --md-on-primary-container: var(--navy);
+
+  --md-secondary: var(--gold);
+  --md-secondary-container: var(--gold-p);
+  --md-on-secondary-container: var(--gold);
 
   --md-surface: #ffffff;
-  --md-surface-dim: #f1f5f9;
+  --md-surface-dim: var(--cream);
   --md-surface-bright: #ffffff;
   --md-surface-container-lowest: #ffffff;
-  --md-surface-container-low: #f8fafc;
-  --md-surface-container: #f1f5f9;
-  --md-surface-container-high: #e9eef5;
-  --md-surface-container-highest: #e2e8f0;
+  --md-surface-container-low: var(--cream-d);
+  --md-surface-container: var(--cream-d);
+  --md-surface-container-high: #E6DECE;
+  --md-surface-container-highest: #E0D8CE;
 
-  --md-on-surface: #0f172a;
-  --md-on-surface-variant: #475569;
+  --md-on-surface: var(--text);
+  --md-on-surface-variant: #3D4E5E;
 
-  --md-outline: #cbd5e1;
-  --md-outline-variant: #e2e8f0;
+  --md-outline: #E0D8CE;
+  --md-outline-variant: #ECE6DC;
 
-  --md-success: #059669;
-  --md-success-container: #d1fae5;
+  --md-success: #2A7A54;
+  --md-success-container: #EAF7F1;
   --md-on-success-container: #064e3b;
 
-  --md-error: #dc2626;
-  --md-error-container: #fee2e2;
+  --md-error: #C04040;
+  --md-error-container: #FDECEA;
   --md-on-error-container: #7f1d1d;
 
-  /* ── MD3 Elevation Shadows ─────────────────────────────── */
+  /* ── MD3 Elevation ───────────────────────────────────── */
   --md-elevation-0: none;
-  --md-elevation-1: 0px 1px 2px rgba(15,23,42,0.06), 0px 1px 3px 1px rgba(15,23,42,0.04);
-  --md-elevation-2: 0px 1px 2px rgba(15,23,42,0.08), 0px 2px 6px 2px rgba(15,23,42,0.06);
-  --md-elevation-3: 0px 1px 3px rgba(15,23,42,0.10), 0px 4px 8px 3px rgba(15,23,42,0.07);
-  --md-elevation-4: 0px 2px 3px rgba(15,23,42,0.12), 0px 6px 10px 4px rgba(15,23,42,0.08);
-  --md-elevation-5: 0px 4px 4px rgba(15,23,42,0.14), 0px 8px 12px 6px rgba(15,23,42,0.09);
+  --md-elevation-1: 0 1px 6px rgba(26,58,92,.07);
+  --md-elevation-2: 0 3px 14px rgba(26,58,92,.10);
+  --md-elevation-3: 0 6px 22px rgba(26,58,92,.13);
+  --md-elevation-4: 0 10px 36px rgba(26,58,92,.16);
+  --md-elevation-5: 0 14px 64px rgba(26,58,92,.22);
 
-  /* ── MD3 Shape (Border Radius) ─────────────────────────── */
+  /* ── MD3 Shape ───────────────────────────────────────── */
   --md-shape-none: 0px;
   --md-shape-extra-small: 4px;
-  --md-shape-small: 8px;
-  --md-shape-medium: 12px;
-  --md-shape-large: 16px;
-  --md-shape-extra-large: 28px;
+  --md-shape-small: 10px;
+  --md-shape-medium: 16px;
+  --md-shape-large: 22px;
+  --md-shape-extra-large: 32px;
   --md-shape-full: 9999px;
 
   /* ── State Layer Opacities (MD3) ───────────────────────── */
@@ -65,21 +76,20 @@
 
   /* ── Legacy aliases (keep existing components working) ─── */
   --bg: var(--md-surface-dim);
-  --bg-app: radial-gradient(ellipse 100% 120% at 50% -30%, rgba(79, 70, 229, 0.09), transparent 55%),
-    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 40%, #eef2f7 100%);
+  --bg-app: radial-gradient(ellipse 100% 120% at 50% -30%, rgba(224, 123, 57, 0.12), transparent 60%),
+    var(--cream);
   --surface: var(--md-surface);
   --surface-muted: var(--md-surface-container-low);
   --text: var(--md-on-surface);
   --text-secondary: var(--md-on-surface-variant);
   --border: var(--md-outline-variant);
   --border-strong: var(--md-outline);
-  --accent: var(--md-primary);
-  --accent-hover: var(--md-primary-hover);
-  --accent-muted: #818cf8;
-  --accent-soft: rgba(79, 70, 229, 0.1);
-  --accent-glow: rgba(79, 70, 229, 0.22);
-  --success: var(--md-success);
-  --danger: var(--md-error);
+  --accent: var(--md-secondary);
+  --accent-hover: var(--gold-l);
+  --accent-soft: rgba(224, 123, 57, 0.1);
+  --accent-glow: rgba(224, 123, 57, 0.18);
+  --success: #2A7A54;
+  --danger: #C04040;
   --radius: var(--md-shape-medium);
   --radius-lg: var(--md-shape-large);
   --radius-xl: var(--md-shape-extra-large);
@@ -87,13 +97,14 @@
   --shadow: var(--md-elevation-2);
   --shadow-md: var(--md-elevation-3);
   --shadow-lg: var(--md-elevation-4);
-  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  --font: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-  --shell-nav-bg: linear-gradient(165deg, #0f172a 0%, #1e1b4b 55%, #0f172a 100%);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --font: "Nunito", system-ui, -apple-system, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+  --shell-nav-bg: linear-gradient(160deg, #0F2744 0%, #1C3D60 40%, #0E2A44 100%);
   --shell-nav-border: rgba(255, 255, 255, 0.06);
-  --shell-nav-text: rgba(248, 250, 252, 0.72);
-  --shell-nav-active-bg: rgba(99, 102, 241, 0.22);
-  --shell-nav-active-text: #e0e7ff;
+  --shell-nav-text: rgba(255, 255, 255, 0.6);
+  --shell-nav-active-bg: rgba(255, 255, 255, 0.08);
+  --shell-nav-active-text: #ffffff;
 }
 
 /* ── Reset ─────────────────────────────────────────────────── */

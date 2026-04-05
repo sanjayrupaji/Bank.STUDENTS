@@ -10,7 +10,7 @@ const users = asyncHandler(async (req, res) => {
   const q = (req.query.q || "").trim();
   const sortField = req.query.sortField || "createdAt";
   const sortDir = req.query.sortDir === "asc" ? "asc" : "desc";
-  const data = await adminService.listUsers(page, limit, q, sortField, sortDir);
+  const data = await adminService.listUsers(page, limit, q, sortField, sortDir, req.user.schoolId);
   return sendSuccess(res, data);
 });
 
@@ -19,7 +19,7 @@ const accounts = asyncHandler(async (req, res) => {
   const q = (req.query.q || "").trim();
   const sortField = req.query.sortField || "createdAt";
   const sortDir = req.query.sortDir === "asc" ? "asc" : "desc";
-  const data = await adminService.listAccounts(page, limit, q, sortField, sortDir);
+  const data = await adminService.listAccounts(page, limit, q, sortField, sortDir, req.user.schoolId);
   return sendSuccess(res, data);
 });
 
@@ -29,14 +29,14 @@ const transactions = asyncHandler(async (req, res) => {
   const type = req.query.type || "";
   const sortField = req.query.sortField || "createdAt";
   const sortDir = req.query.sortDir === "asc" ? "asc" : "desc";
-  const data = await adminService.listAllTransactions(page, limit, q, type, sortField, sortDir);
+  const data = await adminService.listAllTransactions(page, limit, q, type, sortField, sortDir, req.user.schoolId);
   return sendSuccess(res, data);
 });
 
 const exportTransactions = asyncHandler(async (req, res) => {
   const q = (req.query.q || "").trim();
   const type = req.query.type || "";
-  const csv = await adminService.exportTransactionsCsv(q, type);
+  const csv = await adminService.exportTransactionsCsv(q, type, req.user.schoolId);
   res.setHeader("Content-Type", "text/csv; charset=utf-8");
   res.setHeader("Content-Disposition", 'attachment; filename="transactions.csv"');
   res.send(csv);

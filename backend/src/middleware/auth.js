@@ -15,11 +15,19 @@ async function authenticate(req, res, next) {
       throw new AppError("Server misconfiguration", 500);
     }
     const decoded = jwt.verify(m[1], process.env.JWT_SECRET);
-    const user = await prisma.user.findUnique({ where: { id: decoded.sub } });
+    const user = await prisma.user.findUnique({ 
+      where: { id: decoded.sub },
+      select: { id: true, role: true, email: true, schoolId: true, isActive: true }
+    });
     if (!user || !user.isActive) {
       return sendFail(res, 401, "Invalid or expired session", null);
     }
-    req.user = { id: user.id, role: user.role, email: user.email };
+    req.user = { 
+      id: user.id, 
+      role: user.role, 
+      email: user.email, 
+      schoolId: user.schoolId 
+    };
     next();
   } catch (e) {
     if (e.name === "JsonWebTokenError" || e.name === "TokenExpiredError") {

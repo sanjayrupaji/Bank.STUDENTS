@@ -45,88 +45,123 @@ async function loadUserForClient(userId) {
   });
 }
 
-async function register({ email, password, fullName, role: requestedRole, mentorEmail }) {
+async function register({ email, password, fullName, role: requestedRole, schoolName, schoolCode }) {
   const emailNorm = email.toLowerCase();
   const existing = await prisma.user.findUnique({ where: { email: emailNorm } });
   if (existing) throw new AppError("Email already registered", 409);
 
   let role = ROLES.STUDENT;
-  if (requestedRole === ROLES.TEACHER) {
+  if (requestedRole === ROLES.MANAGER) {
+    role = ROLES.MANAGER;
+  } else if (requestedRole === ROLES.TEACHER) {
     role = ROLES.TEACHER;
-  } else if (
-    requestedRole === ROLES.STUDENT ||
-    requestedRole === ROLES.USER ||
-    requestedRole == null
-  ) {
+  } else {
     role = ROLES.STUDENT;
-  } else if (requestedRole === ROLES.ADMIN) {
-    throw new AppError("Invalid account type", 400);
   }
 
-  let mentorId = null;
-  if (role === ROLES.STUDENT && mentorEmail) {
-    const mentor = await prisma.user.findFirst({
-      where: {
-        email: String(mentorEmail).toLowerCase(),
-        role: ROLES.TEACHER,
-      },
-    });
-    if (!mentor) {
-      throw new AppError(
-        "No educator account matches that email. Confirm the address or ask your instructor to sign up first.",
-        404
-      );
-    }
-    mentorId = mentor.id;
-  }
-
+  let schoolId = null;
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  await prisma.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: {
-        email: emailNorm,
-        passwordHash,
-        fullName: fullName.trim(),
-        role,
-        mentorId,
-      },
-    });
+  const result = await prisma.$transaction(async (tx) => {
+    let user;
 
-    if (role === ROLES.TEACHER) {
-      return; // Teachers don't get bank accounts in this app
-    }
+    if (role === ROLES.MANAGER) {
+      if (!schoolName) throw new AppError("School name is required for managers", 400);
+      
+      // 1. Create the Manager User
+      user = await tx.user.create({
+        data: {
+          email: emailNorm,
+          passwordHash,
+          fullName: fullName.trim(),
+          role: ROLES.MANAGER,
+        },
+      });
 
-    let created = false;
-    for (let i = 0; i < 12; i++) {
-      const accNum = generateAccountNumber();
-      try {
-        await tx.account.create({
-          data: {
-            userId: user.id,
-            accountNumber: accNum,
-            balanceCents: 0,
-          },
-        });
-        created = true;
-        break;
-      } catch (e) {
-        // Prisma throws P2002 for unique constraint failures
-        if (e.code !== 'P2002') throw e;
+      // 2. Create the School and associate with Manager
+      const newSchoolCode = `${schoolName.toUpperCase().replace(/\s+/g, "_")}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const school = await tx.school.create({
+        data: {
+          name: schoolName.trim(),
+          uniqueCode: newSchoolCode,
+          managerId: user.id,
+        },
+      });
+
+      // 3. Link Manager to School
+      schoolId = school.id;
+      await tx.user.update({
+        where: { id: user.id },
+        data: { schoolId: school.id },
+      });
+
+    } else if (role === ROLES.TEACHER) {
+      if (!schoolCode) throw new AppError("School code is required to join as a teacher", 400);
+      
+      const school = await tx.school.findUnique({ where: { uniqueCode: schoolCode } });
+      if (!school) throw new AppError("Invalid school code. Please contact your administrator.", 404);
+      
+      schoolId = school.id;
+      user = await tx.user.create({
+        data: {
+          email: emailNorm,
+          passwordHash,
+          fullName: fullName.trim(),
+          role: ROLES.TEACHER,
+          schoolId: school.id,
+        },
+      });
+
+    } else {
+      // STUDENT Registration (joined via school code)
+      if (!schoolCode) throw new AppError("School code is required for students", 400);
+      
+      const school = await tx.school.findUnique({ where: { uniqueCode: schoolCode } });
+      if (!school) throw new AppError("Invalid school code", 404);
+      
+      schoolId = school.id;
+      user = await tx.user.create({
+        data: {
+          email: emailNorm,
+          passwordHash,
+          fullName: fullName.trim(),
+          role: ROLES.STUDENT,
+          schoolId: school.id,
+        },
+      });
+
+      // Create Bank Account for Student
+      let accCreated = false;
+      for (let i = 0; i < 10; i++) {
+        const accNum = generateAccountNumber();
+        try {
+          await tx.account.create({
+            data: {
+              userId: user.id,
+              accountNumber: accNum,
+              balanceCents: 0,
+              schoolId: school.id,
+            },
+          });
+          accCreated = true;
+          break;
+        } catch (e) {
+          if (e.code !== 'P2002') throw e;
+        }
       }
+      if (!accCreated) throw new AppError("Failed to allocate account number", 500);
     }
-    if (!created) throw new AppError("Could not allocate unique account number", 500);
+
+    return user;
   });
 
-  const finalUser = await loadUserForClient({ email: emailNorm });
-  // wait, loadUserForClient takes an ID. Let's fix that.
-  const finalUserById = await prisma.user.findUnique({
-    where: { email: emailNorm },
-    include: { mentor: { select: { fullName: true, email: true } } },
+  const finalUser = await prisma.user.findUnique({
+    where: { id: result.id },
+    include: { school: { select: { name: true, uniqueCode: true } } },
   });
 
-  const token = signToken(finalUserById);
-  return { token, user: publicUser(finalUserById) };
+  const token = signToken(finalUser);
+  return { token, user: publicUser(finalUser) };
 }
 
 async function login({ email, password }) {
