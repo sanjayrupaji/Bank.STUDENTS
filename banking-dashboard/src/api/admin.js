@@ -1,6 +1,8 @@
 import { api } from "./client.js";
 
-const BASE = import.meta.env.VITE_API_URL || "";
+const VITE_URL = import.meta.env.VITE_API_URL || "";
+// Strip trailing /api if present to avoid doubling with path constants
+const BASE = VITE_URL.replace(/\/api\/?$/, "");
 
 export function qs(params) {
   const p = new URLSearchParams();

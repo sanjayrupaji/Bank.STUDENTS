@@ -1,4 +1,6 @@
-const BASE = import.meta.env.VITE_API_URL || "";
+const VITE_URL = import.meta.env.VITE_API_URL || "";
+// Strip trailing /api if present to avoid doubling with the paths that already include it
+const BASE = VITE_URL.replace(/\/api\/?$/, "");
 
 export async function api(path, options = {}) {
   const token = localStorage.getItem("bank_token");
