@@ -4,16 +4,20 @@ const { sendSuccess } = require("../utils/response");
 const asyncHandler = require("../utils/asyncHandler");
 
 const register = asyncHandler(async (req, res) => {
-  const { email, password, fullName, role, mentorEmail } = req.body;
+  const { email, password, fullName, role, schoolName, schoolCode } = req.body;
+  
   let apiRole = ROLES.STUDENT;
   if (role === "teacher") apiRole = ROLES.TEACHER;
-  else if (role === "student") apiRole = ROLES.STUDENT;
+  else if (role === "manager") apiRole = ROLES.MANAGER;
+  else apiRole = ROLES.STUDENT;
+
   const result = await authService.register({
     email,
     password,
     fullName,
     role: apiRole,
-    mentorEmail,
+    schoolName,
+    schoolCode,
   });
   return sendSuccess(res, result, "Registered successfully", 201);
 });

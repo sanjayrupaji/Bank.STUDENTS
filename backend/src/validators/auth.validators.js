@@ -8,7 +8,9 @@ const registerRules = [
     .custom((v) => typeof v === "string" && /[A-Za-z]/.test(v) && /\d/.test(v))
     .withMessage("Password must include at least one letter and one number"),
   body("fullName").trim().isLength({ min: 1, max: 120 }),
-  body("role").optional().isIn(["student", "teacher"]),
+  body("role").optional().isIn(["student", "teacher", "manager"]),
+  body("schoolName").optional().trim().isLength({ min: 1, max: 120 }),
+  body("schoolCode").optional().trim().isLength({ min: 1, max: 20 }),
   body("mentorEmail").optional().isEmail().normalizeEmail(),
 ];
 
