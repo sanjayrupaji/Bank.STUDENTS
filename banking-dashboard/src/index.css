@@ -1,0 +1,162 @@
+/* ============================================================
+   Material Design 3 — Global Design Tokens & Base Styles
+   School Bank SaaS — banking-dashboard
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* ── Color Palette ─────────────────────────────────────── */
+  --md-primary: #4f46e5;
+  --md-primary-hover: #4338ca;
+  --md-primary-container: #e0e7ff;
+  --md-on-primary: #ffffff;
+  --md-on-primary-container: #1e1b4b;
+
+  --md-secondary: #6366f1;
+  --md-secondary-container: #eef2ff;
+  --md-on-secondary-container: #312e81;
+
+  --md-surface: #ffffff;
+  --md-surface-dim: #f1f5f9;
+  --md-surface-bright: #ffffff;
+  --md-surface-container-lowest: #ffffff;
+  --md-surface-container-low: #f8fafc;
+  --md-surface-container: #f1f5f9;
+  --md-surface-container-high: #e9eef5;
+  --md-surface-container-highest: #e2e8f0;
+
+  --md-on-surface: #0f172a;
+  --md-on-surface-variant: #475569;
+
+  --md-outline: #cbd5e1;
+  --md-outline-variant: #e2e8f0;
+
+  --md-success: #059669;
+  --md-success-container: #d1fae5;
+  --md-on-success-container: #064e3b;
+
+  --md-error: #dc2626;
+  --md-error-container: #fee2e2;
+  --md-on-error-container: #7f1d1d;
+
+  /* ── MD3 Elevation Shadows ─────────────────────────────── */
+  --md-elevation-0: none;
+  --md-elevation-1: 0px 1px 2px rgba(15,23,42,0.06), 0px 1px 3px 1px rgba(15,23,42,0.04);
+  --md-elevation-2: 0px 1px 2px rgba(15,23,42,0.08), 0px 2px 6px 2px rgba(15,23,42,0.06);
+  --md-elevation-3: 0px 1px 3px rgba(15,23,42,0.10), 0px 4px 8px 3px rgba(15,23,42,0.07);
+  --md-elevation-4: 0px 2px 3px rgba(15,23,42,0.12), 0px 6px 10px 4px rgba(15,23,42,0.08);
+  --md-elevation-5: 0px 4px 4px rgba(15,23,42,0.14), 0px 8px 12px 6px rgba(15,23,42,0.09);
+
+  /* ── MD3 Shape (Border Radius) ─────────────────────────── */
+  --md-shape-none: 0px;
+  --md-shape-extra-small: 4px;
+  --md-shape-small: 8px;
+  --md-shape-medium: 12px;
+  --md-shape-large: 16px;
+  --md-shape-extra-large: 28px;
+  --md-shape-full: 9999px;
+
+  /* ── State Layer Opacities (MD3) ───────────────────────── */
+  --md-state-hover-opacity: 0.08;
+  --md-state-pressed-opacity: 0.12;
+  --md-state-focused-opacity: 0.12;
+  --md-state-dragged-opacity: 0.16;
+
+  /* ── Legacy aliases (keep existing components working) ─── */
+  --bg: var(--md-surface-dim);
+  --bg-app: radial-gradient(ellipse 100% 120% at 50% -30%, rgba(79, 70, 229, 0.09), transparent 55%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 40%, #eef2f7 100%);
+  --surface: var(--md-surface);
+  --surface-muted: var(--md-surface-container-low);
+  --text: var(--md-on-surface);
+  --text-secondary: var(--md-on-surface-variant);
+  --border: var(--md-outline-variant);
+  --border-strong: var(--md-outline);
+  --accent: var(--md-primary);
+  --accent-hover: var(--md-primary-hover);
+  --accent-muted: #818cf8;
+  --accent-soft: rgba(79, 70, 229, 0.1);
+  --accent-glow: rgba(79, 70, 229, 0.22);
+  --success: var(--md-success);
+  --danger: var(--md-error);
+  --radius: var(--md-shape-medium);
+  --radius-lg: var(--md-shape-large);
+  --radius-xl: var(--md-shape-extra-large);
+  --shadow-sm: var(--md-elevation-1);
+  --shadow: var(--md-elevation-2);
+  --shadow-md: var(--md-elevation-3);
+  --shadow-lg: var(--md-elevation-4);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --shell-nav-bg: linear-gradient(165deg, #0f172a 0%, #1e1b4b 55%, #0f172a 100%);
+  --shell-nav-border: rgba(255, 255, 255, 0.06);
+  --shell-nav-text: rgba(248, 250, 252, 0.72);
+  --shell-nav-active-bg: rgba(99, 102, 241, 0.22);
+  --shell-nav-active-text: #e0e7ff;
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg-app);
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+.shell-outlet {
+  min-width: 0;
+  width: 100%;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ── Animations ────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes mdRipple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}

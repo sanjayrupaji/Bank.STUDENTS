@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  role         String   @default("student")
+  mentorId     String?
+  mentor       User?    @relation("MentorStudent", fields: [mentorId], references: [id])
+  students     User[]   @relation("MentorStudent")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  account               Account?
+  transactionsInitiated Transaction[]  @relation("Initiator")
+  announcements         Announcement[] @relation("TeacherAnnouncements")
+}
+
+model Account {
+  id            String   @id @default(uuid())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String   @unique
+  accountNumber String   @unique
+  balanceCents  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  primaryTransactions Transaction[] @relation("PrimaryAccount")
+  counterpartyTransactions Transaction[] @relation("CounterpartyAccount")
+}
+
+model Transaction {
+  id                  String   @id @default(uuid())
+  idempotencyKey      String?  @unique
+  type                String   // 'DEPOSIT', 'WITHDRAW', 'TRANSFER'
+  status              String   @default("COMPLETED") // 'COMPLETED', 'FAILED'
+  amountCents         Int
+  primaryAccountId    String
+  primaryAccount      Account  @relation("PrimaryAccount", fields: [primaryAccountId], references: [id])
+  counterpartyAccountId String?
+  counterpartyAccount   Account? @relation("CounterpartyAccount", fields: [counterpartyAccountId], references: [id])
+  initiatedById       String
+  initiatedBy         User     @relation("Initiator", fields: [initiatedById], references: [id])
+  description         String   @default("")
+  resultPayload       String?  // JSON stringified payload
+  failureReason       String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  teacherId String
+  teacher   User     @relation("TeacherAnnouncements", fields: [teacherId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  isPinned  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

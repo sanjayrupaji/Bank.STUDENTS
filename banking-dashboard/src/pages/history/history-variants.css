@@ -1,0 +1,121 @@
+/* Mobile: card list (not a table) */
+.hist-m-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hist-m-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.hist-m-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.hist-m-type {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+.hist-m-amt {
+  font-weight: 700;
+  font-size: 1rem;
+}
+.hist-m-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  line-height: 1.45;
+}
+.hist-m-pager {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  justify-content: stretch;
+}
+.hist-m-pager .ui-btn {
+  flex: 1;
+  min-height: 44px;
+}
+.hist-m-foot {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* Tablet: table in card + compact pager bar */
+.hist-t-card .ui-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.hist-t-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* Desktop: full-width data workspace */
+.hist-d-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.hist-d-toolbar p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+.hist-d-pager {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Large: two-column — table + summary strip */
+.hist-l-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+  gap: 28px;
+  align-items: start;
+}
+.hist-l-side {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 16px;
+}
+.hist-l-side h3 {
+  margin: 0 0 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+.hist-l-stat {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.hist-l-stat strong {
+  display: block;
+  font-size: 1.5rem;
+  color: var(--text);
+  margin-top: 4px;
+}

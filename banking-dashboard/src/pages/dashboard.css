@@ -1,0 +1,146 @@
+/* ============================================================
+   Dashboard — Base Layout (shared across all viewport tiers)
+   ============================================================ */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Page Heading ───────────────────────────────────────────── */
+.dash-header {
+  margin-bottom: 4px;
+}
+
+.dash-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--md-on-surface);
+}
+
+.dash-sub {
+  margin: 6px 0 0;
+  color: var(--md-on-surface-variant);
+  font-size: 0.9rem;
+}
+
+.dash-insight-line {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  color: var(--md-primary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dash-insight-line::before {
+  content: "●";
+  font-size: 0.5rem;
+  opacity: 0.7;
+}
+
+/* ── Balance Card (used by Mobile tier) ─────────────────────── */
+.dash-balance-card {
+  background: linear-gradient(145deg, #1e1b4b 0%, #312e81 42%, #1e3a8a 100%);
+  color: #fff;
+  border-radius: var(--md-shape-extra-large);
+  padding: 28px 26px;
+  box-shadow: var(--md-elevation-3), 0 8px 32px rgba(49, 46, 129, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-balance-card::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dash-balance-card::after {
+  content: "";
+  position: absolute;
+  bottom: -30px;
+  left: -30px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dash-balance-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.75;
+  font-weight: 700;
+}
+
+.dash-balance-val {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin-top: 8px;
+  line-height: 1;
+}
+
+.dash-acct {
+  font-size: 0.8125rem;
+  opacity: 0.75;
+  margin-top: 10px;
+  font-family: ui-monospace, "Cascadia Code", monospace;
+}
+
+.dash-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dash-actions .ui-btn-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.dash-actions .ui-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Loading / Skeleton ─────────────────────────────────────── */
+.dash-loading {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dash-skeleton {
+  height: 80px;
+  border-radius: var(--md-shape-large);
+  background: linear-gradient(
+    90deg,
+    var(--md-outline-variant) 25%,
+    var(--md-surface-container) 50%,
+    var(--md-outline-variant) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.dash-skeleton--wide {
+  height: 200px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
